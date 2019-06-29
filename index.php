@@ -22,16 +22,16 @@ if($content) {
 		$message_to_send = "Hai scritto '{$text}'";
 		
 		//invio del messaggio di risposta
-		sendMessage($chat_id, $message_to_send);
+		sendMessage($token, $chat_id, $message_to_send);
       
     }
 }
 
 //funzione per inviare un messaggio di risposta all'utente
-function sendMessage($chatId, $messageText){
+function sendMessage($token, $chatId, $messageText){
 	
 		$parameters = array(
-            'chat_id' => $chat_id,
+            'chat_id' => $chatId,
             'text' => $messageText
         );
 
