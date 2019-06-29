@@ -32,7 +32,7 @@ function elaborateMessage($chat_id, $text){
 		
 	switch($text){
 		case "/start":
-			$response="Benvenuto in timezone bot!" + 
+			$response="Benvenuto in timezone bot!" .
 				elaborateMessage($chat_id,"/help");
 			break;
 		case "/help":
@@ -47,8 +47,8 @@ function elaborateMessage($chat_id, $text){
 		case "/timezone_from_location":
 			$response="timezone from location";
 			break;	
-		case default:
-			$response="Comando non trovato.\n\n" +
+		default:
+			$response="Comando non trovato.\n\n" .
 				 elaborateMessage($chat_id,"/help");
 			break;
 	}
@@ -58,10 +58,10 @@ function elaborateMessage($chat_id, $text){
 
 //funzione per stampare messaggio di aiuto
 function helpMessage(){
-	return "Possibili comandi: \n" +
-			"/list_timezone -> stampa la lista di tutte le zone di fuso orario. \n" +
-			"/timezone_from_an_ip -> stampa il fuso orario di una zona dato l'ip. \n" +
-			"/timezone_from_location -> stampa il fuso orario di una zona data. \n"
+	return "Possibili comandi: \n" .
+			"/list_timezone -> stampa la lista di tutte le zone di fuso orario. \n" .
+			"/timezone_from_an_ip -> stampa il fuso orario di una zona dato l'ip. \n" .
+			"/timezone_from_location -> stampa il fuso orario di una zona data. \n";
 }
 
 //funzione per inviare un messaggio di risposta all'utente
