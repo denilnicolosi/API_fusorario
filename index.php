@@ -5,11 +5,9 @@ $content = file_get_contents("php://input");
 
 $token = getenv('BOTTOKEN');
 
-//connessione con database
-
-
 if($content) {
-	
+
+	//connessione con database
 	if(!$conn = pg_connect(getenv("DATABASE_URL"))){
 		error_log("Connessione al database fallita");
 	}else{
@@ -32,7 +30,7 @@ if($content) {
 		
 		//invio del messaggio di risposta
 		sendMessage($token, $chat_id, $message_to_send);
-      
+       
     }
 }
 
@@ -41,47 +39,57 @@ function elaborateMessage($conn, $chat_id, $text){
 	
 	//stampa di debug della tabella del database	
 	$arr = pg_fetch_all(pg_query($conn, "SELECT * FROM user_id;"));
-	error_log("db: ".print_r($arr));
+	error_log("db: ".print_r($arr,1));
 	
 	$status=getChatStatus($conn, $chat_id);
 	
-	if(!$status){
-		switch($text){
-			case "/start":
-				$response="Benvenuto in timezone bot!" .
+	switch($text){
+		case "/start":
+			$response="Benvenuto in timezone bot!\n\n" .
+				elaborateMessage($conn, $chat_id,"/help");
+			deleteChat($conn, $chat_id);	
+			break;
+		case "/help":
+			$response = helpMessage();
+			deleteChat($conn, $chat_id);
+			break;
+		case "/list_timezone":
+			$response=getTimeZoneList($chat_id);				
+			deleteChat($conn, $chat_id);		
+			break;		
+		case "/timezone_from_an_ip":
+			$response="Inserire indirizzo ip "
+					  ."(ad esempio 151.23.42.55): ";
+			setChatStatus($conn, $chat_id, 1);
+			break;
+		case "/timezone_from_location":
+			$response="Inserisci una area tra le seguenti:";
+			setChatStatus($conn, $chat_id, 2);
+			break;	
+		default:
+			if($status==0){
+				$response="Comando non trovato.\n\n" .
 					elaborateMessage($conn, $chat_id,"/help");
 				break;
-			case "/help":
-				$response = helpMessage();
-				break;
-			case "/list_timezone":
-				$response="list time zone";
-				break;
-			case "/timezone_from_an_ip":
-				$response="Inserire indirizzo ip:";
-				setChatStatus($conn, $chat_id, 1);
-				break;
-			case "/timezone_from_location":
-				$response="timezone from location";
-				setChatStatus($conn, $chat_id, 2);
-				break;	
-			default:
-				$response="Comando non trovato.\n\n" .
-					 elaborateMessage($conn, $chat_id,"/help");
-				break;
-		}
-	}else{
+			}
+	}
+	if($response==null){	
 		switch($status){
 			case 1:
 				$response="ricerca indirizzo {$text}";
 				deleteChat($conn, $chat_id);
 				break;
 			case 2:
-				$response="ricerca località {$text}";
+				$response="Inserisci una località tra le seguenti:{$text}";
+				setChatStatus($conn, $chat_id, 3);
+				break;
+			case 3:
+				$response="fuso orario della località:{$text}";				
 				deleteChat($conn, $chat_id);
 				break;
 		}
 	}
+	
 	return $response;
 }
 
@@ -137,7 +145,8 @@ function sendMessage($token, $chatId, $messageText){
 	
 		$parameters = array(
             'chat_id' => $chatId,
-            'text' => $messageText
+            'text' => $messageText,
+            'parse_mode' => "html"
         );
 
         $url = "https://api.telegram.org/bot{$token}/sendMessage";
@@ -152,3 +161,47 @@ function sendMessage($token, $chatId, $messageText){
         $response = curl_exec($handle);
 
 }
+
+//funzione per inviare la lista delle timezone dalla api
+function getTimeZoneList($chat_id){
+		global $token;
+		
+	    $url = "http://worldtimeapi.org/api/timezone";
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_HTTPGET, true);
+        $response = curl_exec($handle);
+        $timezone=json_decode($response, true);
+        
+        $areas=array();
+        
+        foreach($timezone as $t){
+			array_push($areas, substr($t,0,strpos($t,"/")));
+		}
+        
+        $areas= array_unique($areas);
+        
+        foreach($areas as $area){
+			if(strlen($area)>0){
+				$zone=array();
+				
+				foreach($timezone as $t){
+					$pos=strpos($t, $area);
+					if(!($pos===false) && $pos < strpos($t,"/")){ 
+						array_push($zone, $t);
+					}
+				}
+				
+				sendMessage($token, $chat_id,
+				 "<b>".$area.":</b> \n". implode("\n", $zone));
+			}
+        }
+        
+        return "";       
+}
+
+
+?>
+
+
+
