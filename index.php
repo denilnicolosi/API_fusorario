@@ -40,7 +40,7 @@ function elaborateMessage($conn, $chat_id, $text){
 	//stampa di debug della tabella del database	
 	$arr = pg_fetch_all(pg_query($conn, "SELECT * FROM user_id;"));
 	error_log("db: ".print_r($arr,1));
-	
+	$response=null;
 	$status=getChatStatus($conn, $chat_id);
 	
 	switch($text){
@@ -62,8 +62,9 @@ function elaborateMessage($conn, $chat_id, $text){
 					  ."(ad esempio 151.23.42.55): ";
 			setChatStatus($conn, $chat_id, 1);
 			break;
-		case "/timezone_from_location":
-			$response="Inserisci una area tra le seguenti:";
+		case "/timezone_from_location":	
+			$response="Inserisci una area tra le seguenti:\n"
+			           .getArea();
 			setChatStatus($conn, $chat_id, 2);
 			break;	
 		default:
@@ -76,25 +77,45 @@ function elaborateMessage($conn, $chat_id, $text){
 	if($response==null){	
 		switch($status){
 			case 1:
-				if(filter_var($text, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE)) {
+				if(filter_var($text, FILTER_VALIDATE_IP, 
+					FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE)) {
 					//indirizzo ip valido
 					$response=getTimeZoneFromIp($text);
 					deleteChat($conn, $chat_id);
 				}
 				else {
 					//indirizzo ip non valido					
-					$response="Indirizzo ip non valido! \n". 
-					elaborateMessage($conn, $chat_id,"/timezone_from_an_ip");
-				}				
-			
+					$response="Indirizzo ip non valido! \n" 
+					.elaborateMessage($conn, $chat_id,"/timezone_from_an_ip");
+				}			
 				break;
 			case 2:
-				$response="Inserisci una località tra le seguenti:{$text}";
-				setChatStatus($conn, $chat_id, 3);
+				$text=formatText($text);
+				$location=getLocation($text);
+				if(strlen($location)>0){
+					setSavedArea($conn, $chat_id, $text);
+					$response="Inserisci una località tra le seguenti:\n"
+							.$location;
+					setChatStatus($conn, $chat_id, 3);
+				}else{
+					$response="Area non esistente. \n"
+					.elaborateMessage($conn, $chat_id,"/timezone_from_location");
+				}
+				
 				break;
 			case 3:
-				$response="fuso orario della località:{$text}";				
-				deleteChat($conn, $chat_id);
+				$text=formatText($text);
+				$area=getSavedArea($conn, $chat_id);
+				$location=$area."/".$text;
+				$timezone=getTimeZoneLocation($location);
+				if(strcmp($timezone,"error")!=0){
+					$response=$timezone;
+					deleteChat($conn, $chat_id);
+				}else{
+					setChatStatus($conn, $chat_id, 2);
+					$response="Località non valida! \n"
+					.elaborateMessage($conn, $chat_id,"{$area}");
+				}				
 				break;
 		}
 	}
@@ -112,6 +133,26 @@ function getChatStatus($conn, $chat_id){
 		return 0;
 	}
 }
+//funzione per formattare l'area e la località
+function formatText($text){
+	$text=strtolower($text);
+	$text=ucwords($text);
+	
+	//metto maiuscoli i caratteri dopo "_" o "/".
+	$offset=0;
+	while (($pos = strpos($text, "_", $offset)) !== FALSE) {
+        $offset   = $pos + 1;
+        $text[$offset] = strtoupper($text[$offset]);
+    }
+	$offset=0;
+	while (($pos = strpos($text, "/", $offset)) !== FALSE) {
+        $offset   = $pos + 1;
+        $text[$offset] = strtoupper($text[$offset]);
+    }
+	
+	
+	return $text;
+}
 
 //funzione per settare lo stato della chat	
 function setChatStatus($conn, $chat_id, $status){
@@ -124,7 +165,7 @@ function setChatStatus($conn, $chat_id, $status){
           
 	$res = pg_query($conn, $query);
 	if (!$res) {
-		error_log("Errore inserimento {$chat_id} ");
+		error_log("Errore inserimento stato {$chat_id} ");
 		error_log($query);
 	}
 }
@@ -138,6 +179,30 @@ function deleteChat($conn, $chat_id){
 	if (!$res) {
 		error_log("Errore cancellazione {$chat_id} ");
 		error_log($query);
+	}
+}
+
+//funzione per memorizzare l'area dal database
+function setSavedArea($conn, $chat_id, $area){
+	 $query="UPDATE user_id"
+          ." SET area = '{$area}'"
+          ." WHERE chat_id={$chat_id}";
+          
+	$res = pg_query($conn, $query);
+	if (!$res) {
+		error_log("Errore inserimento area {$chat_id} ");
+		error_log($query);
+	}
+}
+
+//funzione per catturare l'area dal database
+function getSavedArea($conn, $chat_id){
+	$res=pg_query($conn, "SELECT area FROM user_id WHERE chat_id={$chat_id};");
+	$arr = pg_fetch_all($res);
+	if($res && pg_num_rows($res)>0){
+		return $arr[0]["area"];
+	}else{
+		return 0;
 	}
 }
 
@@ -209,6 +274,7 @@ function getTimeZoneList($chat_id){
         return "";       
 }
 
+//funzione per catturare il fuso orario dall'api esterna dato l'ip
 function getTimeZoneFromIp($ip){
 	
 		$url = "http://worldtimeapi.org/api/ip/{$ip}";
@@ -236,6 +302,91 @@ function getTimeZoneFromIp($ip){
         
 }
 
+//funzione per catturare le aree dell'api esterna
+function getArea(){
+	
+	    $url = "http://worldtimeapi.org/api/timezone";
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_HTTPGET, true);
+        $response = curl_exec($handle);
+        $timezone=json_decode($response, true);        
+        
+        $areas=array();        
+        foreach($timezone as $t){
+			array_push($areas, substr($t,0,strpos($t,"/")));
+		}        
+        $areas = array_unique($areas);
+        $reply="";
+        foreach($areas as $a){
+			if(strlen($a)>0){
+				$reply=$reply."\n • ".$a;
+			}
+        }
+                
+        return $reply;        
+}
+
+//funzione per catturare le località dall'api esterna data l'area
+function getLocation($area){
+	
+	    $url = "http://worldtimeapi.org/api/timezone";
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_HTTPGET, true);
+        $response = curl_exec($handle);
+        $timezone=json_decode($response, true);        
+        
+        $location=array();        
+        foreach($timezone as $t){
+			if (strpos($t, $area."/") !== false) {
+				array_push( $location,
+				 (substr($t,(strpos($t,$area."/")+strlen($area)+1),
+				 strlen($t))));
+			}
+		}        
+        $reply="";
+        foreach($location as $l){
+			if(strlen($l)>0){
+				$reply=$reply."\n • ".$l;
+			}
+        }
+            
+        return $reply;        
+}
+
+//funzione per catturare il fuso orario data l'area e la località
+function getTimeZoneLocation($location){
+	
+	$url = "http://worldtimeapi.org/api/timezone/{$location}";
+	$handle = curl_init($url);
+	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($handle, CURLOPT_HTTPGET, true);
+	$response = curl_exec($handle);
+	$timezone=json_decode($response, true);
+	
+	if(!isset($timezone['error'])){
+	
+		//composizione della stringa di risposta
+		date_default_timezone_set($timezone["timezone"]);
+		
+		$data=date('Y-m-d', strtotime($timezone["datetime"]));
+		$ora=date('H:i:s', strtotime($timezone["datetime"]));
+		$response= "<b>Fuso orario della zona {$location} </b>\n"
+		."Numero della settimana : {$timezone["week_number"]} \n"
+		."Giorno dell'anno : {$timezone["day_of_year"]} \n"
+		."Giorno della settimana: {$timezone["day_of_week"]} \n"
+		."UTC : {$timezone["utc_offset"]} \n"
+		."Data : {$data} \n"
+		."Ora : {$ora} \n"
+		."Zona di fuso orario : {$timezone["timezone"]}\n";
+		
+	}else{
+		$response="error";
+	}
+	
+	return $response;
+}
 ?>
 
 
