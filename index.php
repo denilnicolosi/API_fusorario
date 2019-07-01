@@ -1,4 +1,21 @@
 <?php
+//stampa di debug delle variabili di post e get
+error_log("post: ".print_r($_POST,1));
+error_log("get: ".print_r($_GET,1));
+
+//gestione del metodo get per ip
+if(isset($_GET['ip'])){
+	header('Content-type: application/json');
+	echo getJsonTimeZoneFromIp($_GET['ip']);
+}
+
+//gestione del metodo get per zona
+if(isset($_GET['timezone'])){
+	header('Content-type: application/json');
+	echo getJsonTimeZoneLocation($_GET['timezone']);
+}
+
+//gestione del bot telegram
 // php://input restituisce i dati raw (testo), 
 //i dati che si riceveranno saranno in formato Json.
 $content = file_get_contents("php://input");
@@ -387,6 +404,73 @@ function getTimeZoneLocation($location){
 	
 	return $response;
 }
+
+//funzione per catturare il fuso orario dall'api esterna dato l'ip
+function getJsonTimeZoneFromIp($ip){
+	
+		$url = "http://worldtimeapi.org/api/ip/{$ip}";
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_HTTPGET, true);
+        $response = curl_exec($handle);
+        $timezone=json_decode($response, true);
+              
+        if(!isset($timezone['error'])){
+			//composizione della stringa di risposta
+			date_default_timezone_set($timezone["timezone"]);
+			
+			$data=date('Y-m-d', strtotime($timezone["datetime"]));
+			$ora=date('H:i:s', strtotime($timezone["datetime"]));
+				
+			$r=array();
+			$r['ip']=$ip;
+			$r['week_number']= $timezone["week_number"];
+			$r['day_of_year']= $timezone["day_of_year"];
+			$r['day_of_week']= $timezone["day_of_week"];
+			$r['utc_offset']= $timezone["utc_offset"];
+			$r['date']=$data;
+			$r['time']=$ora;
+			$r['timezone']=$timezone["timezone"];
+		}else{
+			$r="error";
+		}
+        return json_encode($r);
+        
+}
+
+//funzione per catturare il fuso orario data l'area e la località
+function getJsonTimeZoneLocation($location){
+	
+	$url = "http://worldtimeapi.org/api/timezone/{$location}";
+	$handle = curl_init($url);
+	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($handle, CURLOPT_HTTPGET, true);
+	$response = curl_exec($handle);
+	$timezone=json_decode($response, true);
+	
+	if(!isset($timezone["error"])){
+		//composizione della stringa di risposta
+		date_default_timezone_set($timezone["timezone"]);
+		
+		$data=date('Y-m-d', strtotime($timezone["datetime"]));
+		$ora=date('H:i:s', strtotime($timezone["datetime"]));
+			
+		$r=array();
+		$r['week_number']= $timezone["week_number"];
+		$r['day_of_year']= $timezone["day_of_year"];
+		$r['day_of_week']= $timezone["day_of_week"];
+		$r['utc_offset']= $timezone["utc_offset"];
+		$r['date']=$data;
+		$r['time']=$ora;
+		$r['timezone']=$timezone["timezone"];
+	}else{
+		$r="error";
+	}
+	return json_encode($r);
+}
+
+
+
 ?>
 
 
