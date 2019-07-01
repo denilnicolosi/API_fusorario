@@ -1,5 +1,5 @@
 # API_fusorario
-API di fuso orario per il bot telegram t.me/fusorario_bot
+API di fuso orario per il bot telegram [fusorario_bot](https://t.me/fusorario_bot)
 
 Progetto di esame per il corso [Piattaforme per la gestione digitale del territorio](https://www.uniurb.it/insegnamenti-e-programmi/255577) sviluppato da **Nicolosi Denil** Mat.**284720**
 
