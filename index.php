@@ -76,8 +76,17 @@ function elaborateMessage($conn, $chat_id, $text){
 	if($response==null){	
 		switch($status){
 			case 1:
-				$response="ricerca indirizzo {$text}";
-				deleteChat($conn, $chat_id);
+				if(filter_var($text, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE)) {
+					//indirizzo ip valido
+					$response=getTimeZoneFromIp($text);
+					deleteChat($conn, $chat_id);
+				}
+				else {
+					//indirizzo ip non valido					
+					$response="Indirizzo ip non valido! \n". 
+					elaborateMessage($conn, $chat_id,"/timezone_from_an_ip");
+				}				
+			
 				break;
 			case 2:
 				$response="Inserisci una località tra le seguenti:{$text}";
@@ -200,6 +209,32 @@ function getTimeZoneList($chat_id){
         return "";       
 }
 
+function getTimeZoneFromIp($ip){
+	
+		$url = "http://worldtimeapi.org/api/ip/{$ip}";
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_HTTPGET, true);
+        $response = curl_exec($handle);
+        $timezone=json_decode($response, true);
+        
+        //composizione della stringa di risposta
+        date_default_timezone_set($timezone["timezone"]);
+        
+        $data=date('Y-m-d', strtotime($timezone["datetime"]));
+        $ora=date('H:i:s', strtotime($timezone["datetime"]));
+        $response= "<b>Fuso orario dell'indirizzo {$ip} </b>\n"
+        ."Numero della settimana : {$timezone["week_number"]} \n"
+        ."Giorno dell'anno : {$timezone["day_of_year"]} \n"
+		."Giorno della settimana: {$timezone["day_of_week"]} \n"
+        ."UTC : {$timezone["utc_offset"]} \n"
+        ."Data : {$data} \n"
+        ."Ora : {$ora} \n"
+        ."Zona di fuso orario : {$timezone["timezone"]}\n";
+        
+        return $response;
+        
+}
 
 ?>
 
