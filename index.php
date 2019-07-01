@@ -15,6 +15,18 @@ if(isset($_GET['timezone'])){
 	echo getJsonTimeZoneLocation($_GET['timezone']);
 }
 
+//gestione del metodo post per ip
+if(isset($_POST['ip'])){
+	header('Content-type: application/json');
+	echo getJsonTimeZoneFromIp($_POST['ip']);
+}
+
+//gestione del metodo post per zona
+if(isset($_POST['timezone'])){
+	header('Content-type: application/json');
+	echo getJsonTimeZoneLocation($_POST['timezone']);
+}
+
 //gestione del bot telegram
 // php://input restituisce i dati raw (testo), 
 //i dati che si riceveranno saranno in formato Json.
