@@ -3,28 +3,34 @@
 error_log("post: ".print_r($_POST,1));
 error_log("get: ".print_r($_GET,1));
 
-//gestione del metodo get per ip
-if(isset($_GET['ip'])){
-	header('Content-type: application/json');
-	echo getJsonTimeZoneFromIp($_GET['ip']);
-}
+$request = $_SERVER['REQUEST_URI'];
+error_log("request: ".$request);
 
-//gestione del metodo get per zona
-if(isset($_GET['timezone'])){
-	header('Content-type: application/json');
-	echo getJsonTimeZoneLocation($_GET['timezone']);
-}
+if(strpos($request, "/ip") !== false){
+	//gestione del metodo get per ip
+	if(isset($_GET['ip'])){
+		header('Content-type: application/json');
+		echo getJsonTimeZoneFromIp($_GET['ip']);
+	}
 
-//gestione del metodo post per ip
-if(isset($_POST['ip'])){
-	header('Content-type: application/json');
-	echo getJsonTimeZoneFromIp($_POST['ip']);
+	//gestione del metodo post per ip
+	if(isset($_POST['ip'])){
+		header('Content-type: application/json');
+		echo getJsonTimeZoneFromIp($_POST['ip']);
+	}
 }
+if(strpos($request, "/timezone") !== false){
+	//gestione del metodo get per zona
+	if(isset($_GET['timezone'])){
+		header('Content-type: application/json');
+		echo getJsonTimeZoneLocation($_GET['timezone']);
+	}
 
-//gestione del metodo post per zona
-if(isset($_POST['timezone'])){
-	header('Content-type: application/json');
-	echo getJsonTimeZoneLocation($_POST['timezone']);
+	//gestione del metodo post per zona
+	if(isset($_POST['timezone'])){
+		header('Content-type: application/json');
+		echo getJsonTimeZoneLocation($_POST['timezone']);
+	}
 }
 
 //gestione del bot telegram
