@@ -5,6 +5,8 @@ Progetto di esame per il corso [Piattaforme per la gestione digitale del territo
 
 Servizio API disponibile su Heroku : https://api-fusorario.herokuapp.com/
 
+[Documentazione API tramite specifica OpenAPI](https://app.swaggerhub.com/apis-docs/Denil/api-fusorario/1.0.1)
+
 Il servizio implementato ha come scopo quello di fornire informazioni sul fuso orario mondiale.
 Le informazioni si possono ottenere sia dalla geolocalizzazione di un indirizzo ip, che specificando la zona di fuso orario. 
 
