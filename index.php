@@ -1,8 +1,8 @@
 <?php
-//stampa di debug delle variabili di post e get
+//stampe di debug in console
+error_log("server: ".print_r($_SERVER,1));
 error_log("post: ".print_r($_POST,1));
 error_log("get: ".print_r($_GET,1));
-
 $request = $_SERVER['REQUEST_URI'];
 error_log("request: ".$request);
 
@@ -12,61 +12,68 @@ if(strpos($request, "/ip") !== false){
 		header('Content-type: application/json');
 		echo getJsonTimeZoneFromIp($_GET['ip']);
 	}
-
 	//gestione del metodo post per ip
-	if(isset($_POST['ip'])){
+	else if(isset($_POST['ip'])){
 		header('Content-type: application/json');
 		echo getJsonTimeZoneFromIp($_POST['ip']);
-	}
+	}	
+	else
+		http_response_code(400);
 }
-if(strpos($request, "/timezone") !== false){
+else if(strpos($request, "/timezone") !== false){
 	//gestione del metodo get per zona
 	if(isset($_GET['timezone'])){
 		header('Content-type: application/json');
 		echo getJsonTimeZoneLocation($_GET['timezone']);
 	}
-
 	//gestione del metodo post per zona
-	if(isset($_POST['timezone'])){
+	else if(isset($_POST['timezone'])){
 		header('Content-type: application/json');
 		echo getJsonTimeZoneLocation($_POST['timezone']);
 	}
+	else
+		http_response_code(400);
 }
+else
+{
+	//gestione del bot telegram
+	// php://input restituisce i dati raw (testo), 
+	//i dati che si riceveranno saranno in formato Json.
+	$content = file_get_contents("php://input");	
 
-//gestione del bot telegram
-// php://input restituisce i dati raw (testo), 
-//i dati che si riceveranno saranno in formato Json.
-$content = file_get_contents("php://input");
+	if($content) {
 
-$token = getenv('BOTTOKEN');
+		error_log("content: ".print_r($content,1));	
+		
+		//decodifica del json in array
+		$update = json_decode($content, true);
 
-if($content) {
+		if(isset($update['message'])) {
+			//catturo tutti gli elementi ricevuti da telegram
+			$message = $update['message'];
+			$message_id = $message['message_id'];
+			$chat_id = $message['chat']['id'];
+			$from_id = $message['from']['id'];
+			$text = $message['text'];
+			
+			$token = getenv('BOTTOKEN');
 
-	//connessione con database
-	if(!$conn = pg_connect(getenv("DATABASE_URL"))){
-		error_log("Connessione al database fallita");
-	}else{
-		error_log("Connessione al database riuscita");
+			//connessione con database
+			if(!$conn = pg_connect(getenv("DATABASE_URL"))){
+				error_log("Connessione al database fallita");
+			}else{
+				error_log("Connessione al database riuscita");
+			}
+
+			//elaborazione della risposta
+			$message_to_send = elaborateMessage($conn, $chat_id, $text);
+			
+			//invio del messaggio di risposta
+			sendMessage($token, $chat_id, $message_to_send);		
+		}
+		else
+			http_response_code(400);
 	}
-	
-	//decodifica del json in array
-    $update = json_decode($content, true);
-
-    if(isset($update['message'])) {
-		//catturo tutti gli elementi ricevuti da telegram
-        $message = $update['message'];
-        $message_id = $message['message_id'];
-        $chat_id = $message['chat']['id'];
-        $from_id = $message['from']['id'];
-        $text = $message['text'];
-		
-		//elaborazione della risposta
-		$message_to_send = elaborateMessage($conn, $chat_id, $text);
-		
-		//invio del messaggio di risposta
-		sendMessage($token, $chat_id, $message_to_send);
-       
-    }
 }
 
 //funzione per elaborare la risposta
