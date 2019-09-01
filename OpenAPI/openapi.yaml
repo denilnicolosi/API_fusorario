@@ -41,6 +41,8 @@ paths:
                 $ref: '#/components/schemas/IpTimezone'
         400:
           description: Richiesta errata
+        401:
+          description: Autenticazione fallita
         503:
           description: Servizio non disponibile
     post:
@@ -68,6 +70,8 @@ paths:
                 $ref: '#/components/schemas/IpTimezone'
         400:
           description: Richiesta errata
+        401:
+          description: Autenticazione fallita
         503:
           description: Servizio non disponibile
   /timezone:
@@ -95,6 +99,8 @@ paths:
                 $ref: '#/components/schemas/ZoneTimezone'
         400:
           description: Richiesta errata
+        401:
+          description: Autenticazione fallita
         503:
           description: Servizio non disponibile
     post:
@@ -121,6 +127,8 @@ paths:
                 $ref: '#/components/schemas/ZoneTimezone'
         400:
           description: Richiesta errata
+        401:
+          description: Autenticazione fallita
         503:
           description: Servizio non disponibile
 components:
