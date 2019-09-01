@@ -1,4 +1,6 @@
 <?php
+set_include_path('/app');
+
 //stampe di debug in console
 error_log("server: ".print_r($_SERVER,1));
 error_log("post: ".print_r($_POST,1));
@@ -6,7 +8,11 @@ error_log("get: ".print_r($_GET,1));
 $request = $_SERVER['REQUEST_URI'];
 error_log("request: ".$request);
 
-if(strpos($request, "/ip") !== false){
+//apertura documentazione open api in GET su /
+if($_SERVER['REQUEST_METHOD'] === "GET" && $request === "/"){
+	echo file_get_contents("OpenAPI/openAPI.html");
+}
+else if(strpos($request, "/ip") !== false){
 	//gestione del metodo get per ip
 	if(isset($_GET['ip'])){
 		header('Content-type: application/json');
