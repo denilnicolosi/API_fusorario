@@ -8,11 +8,13 @@ error_log("get: ".print_r($_GET,1));
 $request = $_SERVER['REQUEST_URI'];
 error_log("request: ".$request);
 
-//apertura documentazione open api in GET su /
+
 if($_SERVER['REQUEST_METHOD'] === "GET" && $request === "/"){
+	//apertura documentazione open api in GET su /
 	echo file_get_contents("OpenAPI/openAPI.html");
 }
 else if(strpos($request, "/ip") !== false){
+	authenticate();	
 	//gestione del metodo get per ip
 	if(isset($_GET['ip'])){
 		header('Content-type: application/json');
@@ -27,6 +29,7 @@ else if(strpos($request, "/ip") !== false){
 		http_response_code(400);
 }
 else if(strpos($request, "/timezone") !== false){
+	authenticate();
 	//gestione del metodo get per zona
 	if(isset($_GET['timezone'])){
 		header('Content-type: application/json');
@@ -498,6 +501,24 @@ function getJsonTimeZoneLocation($location){
 		$r="error";
 	}
 	return json_encode($r);
+}
+
+function authenticate(){
+
+	if (!isset($_SERVER['PHP_AUTH_USER'])) {
+		header('WWW-Authenticate: Basic realm="Autenticazione"');
+		header('HTTP/1.0 401 Unauthorized');
+		echo 'Autenticazione fallita';
+		exit;
+	} else {		
+		if($_SERVER['PHP_AUTH_USER'] !== getenv('USERNAME') ||
+		   $_SERVER['PHP_AUTH_PW'] !== getenv('PASSWORD')){
+			header('HTTP/1.0 401 Unauthorized');
+			echo 'Username o password errati.';
+			exit;
+		}		
+	}
+
 }
 
 
