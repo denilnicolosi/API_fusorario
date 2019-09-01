@@ -39,6 +39,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IpTimezone'
+        400:
+          description: Richiesta errata
         503:
           description: Servizio non disponibile
     post:
@@ -64,6 +66,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IpTimezone'
+        400:
+          description: Richiesta errata
         503:
           description: Servizio non disponibile
   /timezone:
@@ -89,6 +93,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ZoneTimezone'
+        400:
+          description: Richiesta errata
         503:
           description: Servizio non disponibile
     post:
@@ -113,6 +119,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ZoneTimezone'
+        400:
+          description: Richiesta errata
         503:
           description: Servizio non disponibile
 components:
