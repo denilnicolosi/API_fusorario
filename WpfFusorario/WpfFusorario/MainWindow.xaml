@@ -20,11 +20,11 @@
 
         <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center"    Text="Client per API fusorario. Effettuare una ricerca per indirizzo ip o zona." FontWeight="Bold" />
 
-        <TextBlock Grid.Column="0" Grid.Row="1" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" Text=" IP:" Margin="1,28,160,27" Width="26"  />
+        <TextBlock Grid.Column="0" Grid.Row="1" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" Text=" IP:" Margin="11,28,159,27" Width="26"  />
         <TextBox Grid.Row="1" Grid.Column="0"  x:Name="ip" Height="20"  Text="151.32.23.43" Margin="46,26,10,24"/>
         <Button Grid.Row="1" Grid.Column="1" x:Name="btnIp" Height="30" Width="120" Content="Ricerca per ip" Click="BtnIp_Click"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="2" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" Text=" Zona:" Margin="1,28,150,27" Width="36" />
+        <TextBlock Grid.Column="0" Grid.Row="2" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" Text=" Zona:" Margin="11,28,149,27" Width="36" />
         <TextBox Grid.Row="2" Grid.Column="0"  x:Name="zone" Height="20"  Text="Europe/Rome" Margin="46,26,10,24"/>
         <Button Grid.Row="2" Grid.Column="2" x:Name="btnZone" Height="30" Width="120" Content="Ricerca per zona" Click="BtnZone_Click" />
 

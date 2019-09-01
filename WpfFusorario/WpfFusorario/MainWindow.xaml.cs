@@ -1,5 +1,6 @@
 ﻿using Json.Net;
 using RestSharp;
+using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -24,6 +25,7 @@ namespace WpfFusorario
             try
             {
                 var client = new RestClient("https://api-fusorario.herokuapp.com");
+                client.Authenticator = new HttpBasicAuthenticator("username", "pippo");
                 var request = new RestRequest("/timezone", Method.POST);
                 request.AddParameter("timezone", zone.Text);
                 IRestResponse response = client.Execute(request);
@@ -57,6 +59,7 @@ namespace WpfFusorario
             try
             {             
                 var client = new RestClient("https://api-fusorario.herokuapp.com");
+                client.Authenticator= new HttpBasicAuthenticator("username", "pippo");
                 var request = new RestRequest("/ip", Method.GET);
                 request.AddParameter("ip", ip.Text);
                 IRestResponse response = client.Execute(request);
