@@ -40,6 +40,11 @@ else if(strpos($request, "/timezone") !== false){
 		header('Content-type: application/json');
 		echo getJsonTimeZoneLocation($_POST['timezone']);
 	}
+	//gestione della stampa della lista delle zone
+	else if(empty($_GET) && empty($_POST)){
+		header('Content-type: application/json');
+		echo getJsonTimeZoneList();
+	}
 	else
 		http_response_code(400);
 }
@@ -503,6 +508,19 @@ function getJsonTimeZoneLocation($location){
 	return json_encode($r);
 }
 
+//funzione per catturare la lista delle località di fuso orario
+function getJsonTimeZoneList(){
+
+	$url = "http://worldtimeapi.org/api/timezone";
+	$handle = curl_init($url);
+	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($handle, CURLOPT_HTTPGET, true);
+	$response = curl_exec($handle);
+
+	return $response;
+}
+
+//funzione per la gestione dell'autenticazione
 function authenticate(){
 
 	if (!isset($_SERVER['PHP_AUTH_USER'])) {
