@@ -24,9 +24,16 @@ else if(strpos($request, "/ip") !== false){
 	else if(isset($_POST['ip'])){
 		header('Content-type: application/json');
 		echo getJsonTimeZoneFromIp($_POST['ip']);
+	}
+	else if(empty($_GET) && empty($_POST)){
+		header('Content-type: application/json');
+		echo getJsonTimeZoneFromIp($_SERVER['HTTP_X_FORWARDED_FOR']);
 	}	
-	else
+	else{
 		http_response_code(400);
+		echo "400 Bad request";
+	}
+		
 }
 else if(strpos($request, "/timezone") !== false){
 	authenticate();
@@ -45,8 +52,10 @@ else if(strpos($request, "/timezone") !== false){
 		header('Content-type: application/json');
 		echo getJsonTimeZoneList();
 	}
-	else
+	else{
 		http_response_code(400);
+		echo "400 Bad request";
+	}
 }
 else
 {
@@ -85,8 +94,10 @@ else
 			//invio del messaggio di risposta
 			sendMessage($token, $chat_id, $message_to_send);		
 		}
-		else
+		else{
 			http_response_code(400);
+			echo "400 Bad request";
+		}
 	}
 }
 
