@@ -694,7 +694,6 @@
   "description" : "Errore nell'interrogazione dell'api"
 };
             defs.IpTimezone = {
-  "required" : [ "date", "day_of_week", "day_of_year", "ip", "time", "timezone", "utc_offset", "week_number" ],
   "properties" : {
     "ip" : {
       "type" : "string",
@@ -730,8 +729,14 @@
     }
   }
 };
+            defs.ListTimezone = {
+  "type" : "array",
+  "description" : "Lista delle zone di fuso orario disponibili",
+  "items" : {
+    "type" : "string"
+  }
+};
             defs.ZoneTimezone = {
-  "required" : [ "date", "day_of_week", "day_of_year", "time", "timezone", "utc_offset", "week_number" ],
   "properties" : {
     "week_number" : {
       "type" : "integer",
@@ -823,7 +828,7 @@
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Dato un indirizzo ip, viene geocalizzato e ne viene dato il fuso orario.</p>
+                        <p class="marked">Dato un indirizzo ip, viene geocalizzato e ne viene dato il fuso orario. In caso non sia specificato un indirizzo ip, viene utilizzato l&#x27;indirizzo del client che effettua la richiesta.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/ip</span></code></pre>
@@ -897,7 +902,7 @@ public class IndirizzoIpApiExample {
   <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
   </div> -->
                             <div class="tab-pane" id="examples-IndirizzoIp-ipGet-0-objc">
-                              <pre class="prettyprint"><code class="language-cpp">String *ip = ip_example; // indirizzo ip di cui si vuole conoscere il fuso orario.
+                              <pre class="prettyprint"><code class="language-cpp">String *ip = ip_example; // indirizzo ip di cui si vuole conoscere il fuso orario. (optional)
 
 IndirizzoIpApi *apiInstance = [[IndirizzoIpApi alloc] init];
 
@@ -918,8 +923,9 @@ IndirizzoIpApi *apiInstance = [[IndirizzoIpApi alloc] init];
                               <pre class="prettyprint"><code class="language-js">var FusorarioApi = require('fusorario_api');
 
 var api = new FusorarioApi.IndirizzoIpApi()
-var ip = ip_example; // {{String}} indirizzo ip di cui si vuole conoscere il fuso orario.
-
+var opts = { 
+  'ip': ip_example // {{String}} indirizzo ip di cui si vuole conoscere il fuso orario.
+};
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -927,7 +933,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.ipGet(ip, callback);
+api.ipGet(opts, callback);
 </code></pre>
                             </div>
 
@@ -949,7 +955,7 @@ namespace Example
         {
 
             var apiInstance = new IndirizzoIpApi();
-            var ip = ip_example;  // String | indirizzo ip di cui si vuole conoscere il fuso orario.
+            var ip = ip_example;  // String | indirizzo ip di cui si vuole conoscere il fuso orario. (optional) 
 
             try
             {
@@ -1009,11 +1015,11 @@ from pprint import pprint
 
 # create an instance of the API class
 api_instance = swagger_client.IndirizzoIpApi()
-ip = ip_example # String | indirizzo ip di cui si vuole conoscere il fuso orario.
+ip = ip_example # String | indirizzo ip di cui si vuole conoscere il fuso orario. (optional)
 
 try: 
     # Geolocalizzazione per inidirizzo ip
-    api_response = api_instance.ip_get(ip)
+    api_response = api_instance.ip_get(ip=ip)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling IndirizzoIpApi->ipGet: %s\n" % e)</code></pre>
@@ -1032,7 +1038,7 @@ except ApiException as e:
                                 <th width="150px">Name</th>
                                 <th>Description</th>
                               </tr>
-                                <tr><td style="width:150px;">ip*</td>
+                                <tr><td style="width:150px;">ip</td>
                                 <td>
                                 
                                 
@@ -1050,9 +1056,6 @@ except ApiException as e:
                                                         indirizzo ip di cui si vuole conoscere il fuso orario.
                                                     </div>
                                             </div>
-                                                <div class="inner required">
-                                                    Required
-                                                </div>
                                         </div>
                                     </div>
                                 </td>
@@ -1144,7 +1147,7 @@ except ApiException as e:
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Dato un indirizzo ip, viene geocalizzato e ne viene dato il fuso orario.</p>
+                        <p class="marked">Dato un indirizzo ip, viene geocalizzato e ne viene dato il fuso orario. In caso non sia specificato un indirizzo ip, viene utilizzato l&#x27;indirizzo del client che effettua la richiesta.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/ip</span></code></pre>
@@ -1218,7 +1221,7 @@ public class IndirizzoIpApiExample {
   <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
   </div> -->
                             <div class="tab-pane" id="examples-IndirizzoIp-ipPost-0-objc">
-                              <pre class="prettyprint"><code class="language-cpp">String *ip = ip_example; // indirizzo ip di cui si vuole conoscere il fuso orario.
+                              <pre class="prettyprint"><code class="language-cpp">String *ip = ip_example; // indirizzo ip di cui si vuole conoscere il fuso orario. (optional)
 
 IndirizzoIpApi *apiInstance = [[IndirizzoIpApi alloc] init];
 
@@ -1239,8 +1242,9 @@ IndirizzoIpApi *apiInstance = [[IndirizzoIpApi alloc] init];
                               <pre class="prettyprint"><code class="language-js">var FusorarioApi = require('fusorario_api');
 
 var api = new FusorarioApi.IndirizzoIpApi()
-var ip = ip_example; // {{String}} indirizzo ip di cui si vuole conoscere il fuso orario.
-
+var opts = { 
+  'ip': ip_example // {{String}} indirizzo ip di cui si vuole conoscere il fuso orario.
+};
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -1248,7 +1252,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.ipPost(ip, callback);
+api.ipPost(opts, callback);
 </code></pre>
                             </div>
 
@@ -1270,7 +1274,7 @@ namespace Example
         {
 
             var apiInstance = new IndirizzoIpApi();
-            var ip = ip_example;  // String | indirizzo ip di cui si vuole conoscere il fuso orario.
+            var ip = ip_example;  // String | indirizzo ip di cui si vuole conoscere il fuso orario. (optional) 
 
             try
             {
@@ -1330,11 +1334,11 @@ from pprint import pprint
 
 # create an instance of the API class
 api_instance = swagger_client.IndirizzoIpApi()
-ip = ip_example # String | indirizzo ip di cui si vuole conoscere il fuso orario.
+ip = ip_example # String | indirizzo ip di cui si vuole conoscere il fuso orario. (optional)
 
 try: 
     # Geolocalizzazione per inidirizzo ip
-    api_response = api_instance.ip_post(ip)
+    api_response = api_instance.ip_post(ip=ip)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling IndirizzoIpApi->ipPost: %s\n" % e)</code></pre>
@@ -1353,7 +1357,7 @@ except ApiException as e:
                                 <th width="150px">Name</th>
                                 <th>Description</th>
                               </tr>
-                                <tr><td style="width:150px;">ip*</td>
+                                <tr><td style="width:150px;">ip</td>
                                 <td>
                                 
                                 
@@ -1371,9 +1375,6 @@ except ApiException as e:
                                                         indirizzo ip di cui si vuole conoscere il fuso orario.
                                                     </div>
                                             </div>
-                                                <div class="inner required">
-                                                    Required
-                                                </div>
                                         </div>
                                     </div>
                                 </td>
@@ -1468,7 +1469,7 @@ except ApiException as e:
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Data una zona formata da {area}/{localita} viene dato il fuso orario</p>
+                        <p class="marked">Data una zona formata da {area}/{localita} viene dato il fuso orario. Se non viene specificata una zona, viene stampata la lista delle zone.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/timezone</span></code></pre>
@@ -1542,7 +1543,7 @@ public class ZonaApiExample {
   <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
   </div> -->
                             <div class="tab-pane" id="examples-Zona-timezoneGet-0-objc">
-                              <pre class="prettyprint"><code class="language-cpp">String *timezone = timezone_example; // zona di cui si vuole conoscere il fuso orario.
+                              <pre class="prettyprint"><code class="language-cpp">String *timezone = timezone_example; // zona di cui si vuole conoscere il fuso orario. (optional)
 
 ZonaApi *apiInstance = [[ZonaApi alloc] init];
 
@@ -1563,8 +1564,9 @@ ZonaApi *apiInstance = [[ZonaApi alloc] init];
                               <pre class="prettyprint"><code class="language-js">var FusorarioApi = require('fusorario_api');
 
 var api = new FusorarioApi.ZonaApi()
-var timezone = timezone_example; // {{String}} zona di cui si vuole conoscere il fuso orario.
-
+var opts = { 
+  'timezone': timezone_example // {{String}} zona di cui si vuole conoscere il fuso orario.
+};
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -1572,7 +1574,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.timezoneGet(timezone, callback);
+api.timezoneGet(opts, callback);
 </code></pre>
                             </div>
 
@@ -1594,7 +1596,7 @@ namespace Example
         {
 
             var apiInstance = new ZonaApi();
-            var timezone = timezone_example;  // String | zona di cui si vuole conoscere il fuso orario.
+            var timezone = timezone_example;  // String | zona di cui si vuole conoscere il fuso orario. (optional) 
 
             try
             {
@@ -1654,11 +1656,11 @@ from pprint import pprint
 
 # create an instance of the API class
 api_instance = swagger_client.ZonaApi()
-timezone = timezone_example # String | zona di cui si vuole conoscere il fuso orario.
+timezone = timezone_example # String | zona di cui si vuole conoscere il fuso orario. (optional)
 
 try: 
     # Fuso orario da zona
-    api_response = api_instance.timezone_get(timezone)
+    api_response = api_instance.timezone_get(timezone=timezone)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling ZonaApi->timezoneGet: %s\n" % e)</code></pre>
@@ -1677,7 +1679,7 @@ except ApiException as e:
                                 <th width="150px">Name</th>
                                 <th>Description</th>
                               </tr>
-                                <tr><td style="width:150px;">timezone*</td>
+                                <tr><td style="width:150px;">timezone</td>
                                 <td>
                                 
                                 
@@ -1695,9 +1697,6 @@ except ApiException as e:
                                                         zona di cui si vuole conoscere il fuso orario.
                                                     </div>
                                             </div>
-                                                <div class="inner required">
-                                                    Required
-                                                </div>
                                         </div>
                                     </div>
                                 </td>
@@ -1789,7 +1788,7 @@ except ApiException as e:
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Data una zona formata da {area}/{localita} viene dato il fuso orario</p>
+                        <p class="marked">Data una zona formata da {area}/{localita} viene dato il fuso orario. Se non viene specificata una zona, viene stampata la lista delle zone.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/timezone</span></code></pre>
@@ -1863,7 +1862,7 @@ public class ZonaApiExample {
   <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
   </div> -->
                             <div class="tab-pane" id="examples-Zona-timezonePost-0-objc">
-                              <pre class="prettyprint"><code class="language-cpp">String *timezone = timezone_example; // zona di cui si vuole conoscere il fuso orario.
+                              <pre class="prettyprint"><code class="language-cpp">String *timezone = timezone_example; // zona di cui si vuole conoscere il fuso orario. (optional)
 
 ZonaApi *apiInstance = [[ZonaApi alloc] init];
 
@@ -1884,8 +1883,9 @@ ZonaApi *apiInstance = [[ZonaApi alloc] init];
                               <pre class="prettyprint"><code class="language-js">var FusorarioApi = require('fusorario_api');
 
 var api = new FusorarioApi.ZonaApi()
-var timezone = timezone_example; // {{String}} zona di cui si vuole conoscere il fuso orario.
-
+var opts = { 
+  'timezone': timezone_example // {{String}} zona di cui si vuole conoscere il fuso orario.
+};
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -1893,7 +1893,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.timezonePost(timezone, callback);
+api.timezonePost(opts, callback);
 </code></pre>
                             </div>
 
@@ -1915,7 +1915,7 @@ namespace Example
         {
 
             var apiInstance = new ZonaApi();
-            var timezone = timezone_example;  // String | zona di cui si vuole conoscere il fuso orario.
+            var timezone = timezone_example;  // String | zona di cui si vuole conoscere il fuso orario. (optional) 
 
             try
             {
@@ -1975,11 +1975,11 @@ from pprint import pprint
 
 # create an instance of the API class
 api_instance = swagger_client.ZonaApi()
-timezone = timezone_example # String | zona di cui si vuole conoscere il fuso orario.
+timezone = timezone_example # String | zona di cui si vuole conoscere il fuso orario. (optional)
 
 try: 
     # Fuso orario da zona
-    api_response = api_instance.timezone_post(timezone)
+    api_response = api_instance.timezone_post(timezone=timezone)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling ZonaApi->timezonePost: %s\n" % e)</code></pre>
@@ -1998,7 +1998,7 @@ except ApiException as e:
                                 <th width="150px">Name</th>
                                 <th>Description</th>
                               </tr>
-                                <tr><td style="width:150px;">timezone*</td>
+                                <tr><td style="width:150px;">timezone</td>
                                 <td>
                                 
                                 
@@ -2016,9 +2016,6 @@ except ApiException as e:
                                                         zona di cui si vuole conoscere il fuso orario.
                                                     </div>
                                             </div>
-                                                <div class="inner required">
-                                                    Required
-                                                </div>
                                         </div>
                                     </div>
                                 </td>

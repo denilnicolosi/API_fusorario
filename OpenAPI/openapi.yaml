@@ -21,12 +21,13 @@ paths:
       - Indirizzo ip
       summary: Geolocalizzazione per inidirizzo ip
       description: Dato un indirizzo ip, viene geocalizzato e ne viene dato il fuso
-        orario.
+        orario. In caso non sia specificato un indirizzo ip, viene utilizzato l'indirizzo
+        del client che effettua la richiesta.
       parameters:
       - name: ip
         in: query
         description: indirizzo ip di cui si vuole conoscere il fuso orario.
-        required: true
+        required: false
         style: form
         explode: true
         schema:
@@ -50,12 +51,13 @@ paths:
       - Indirizzo ip
       summary: Geolocalizzazione per inidirizzo ip
       description: Dato un indirizzo ip, viene geocalizzato e ne viene dato il fuso
-        orario.
+        orario. In caso non sia specificato un indirizzo ip, viene utilizzato l'indirizzo
+        del client che effettua la richiesta.
       parameters:
       - name: ip
         in: query
         description: indirizzo ip di cui si vuole conoscere il fuso orario.
-        required: true
+        required: false
         style: form
         explode: true
         schema:
@@ -79,12 +81,13 @@ paths:
       tags:
       - Zona
       summary: Fuso orario da zona
-      description: Data una zona formata da {area}/{localita} viene dato il fuso orario
+      description: Data una zona formata da {area}/{localita} viene dato il fuso orario.
+        Se non viene specificata una zona, viene stampata la lista delle zone.
       parameters:
       - name: timezone
         in: query
         description: zona di cui si vuole conoscere il fuso orario.
-        required: true
+        required: false
         style: form
         explode: true
         schema:
@@ -96,7 +99,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ZoneTimezone'
+                oneOf:
+                - $ref: '#/components/schemas/ZoneTimezone'
+                - $ref: '#/components/schemas/ListTimezone'
         400:
           description: Richiesta errata
         401:
@@ -107,12 +112,13 @@ paths:
       tags:
       - Zona
       summary: Fuso orario da zona
-      description: Data una zona formata da {area}/{localita} viene dato il fuso orario
+      description: Data una zona formata da {area}/{localita} viene dato il fuso orario.
+        Se non viene specificata una zona, viene stampata la lista delle zone.
       parameters:
       - name: timezone
         in: query
         description: zona di cui si vuole conoscere il fuso orario.
-        required: true
+        required: false
         style: form
         explode: true
         schema:
@@ -124,7 +130,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ZoneTimezone'
+                oneOf:
+                - $ref: '#/components/schemas/ZoneTimezone'
+                - $ref: '#/components/schemas/ListTimezone'
         400:
           description: Richiesta errata
         401:
@@ -133,16 +141,12 @@ paths:
           description: Servizio non disponibile
 components:
   schemas:
+    ListTimezone:
+      type: array
+      description: Lista delle zone di fuso orario disponibili
+      items:
+        type: string
     IpTimezone:
-      required:
-      - date
-      - day_of_week
-      - day_of_year
-      - ip
-      - time
-      - timezone
-      - utc_offset
-      - week_number
       properties:
         ip:
           type: string
@@ -169,14 +173,6 @@ components:
           type: string
           description: Zona di fuso orario
     ZoneTimezone:
-      required:
-      - date
-      - day_of_week
-      - day_of_year
-      - time
-      - timezone
-      - utc_offset
-      - week_number
       properties:
         week_number:
           type: integer
@@ -203,6 +199,12 @@ components:
       type: string
       description: Errore nell'interrogazione dell'api
   responses:
+    JsonListTimezone:
+      description: 'Lista delle zone di fuso orario in formato JSON '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ListTimezone'
     JsonIpTimezone:
       description: Fuso orario della geolocalizzazione dell'ip in formato JSON
       content:
