@@ -8,13 +8,23 @@ error_log("get: ".print_r($_GET,1));
 $request = $_SERVER['REQUEST_URI'];
 error_log("request: ".$request);
 
+//connessione con database
+if(!$conn = pg_connect(getenv("DATABASE_URL"))){
+	error_log("Connessione al database fallita");
+	http_response_code(503);
+	echo "503 Service unavailable";
+	exit;
+}else{
+	error_log("Connessione al database riuscita");
+}
+
 
 if($_SERVER['REQUEST_METHOD'] === "GET" && $request === "/"){
 	//apertura documentazione open api in GET su /
 	echo file_get_contents("OpenAPI/openAPI.html");
 }
 else if(strpos($request, "/ip") !== false){
-	authenticate();	
+	authenticate($conn);	
 	//gestione del metodo get per ip
 	if(isset($_GET['ip'])){
 		header('Content-type: application/json');
@@ -36,7 +46,7 @@ else if(strpos($request, "/ip") !== false){
 		
 }
 else if(strpos($request, "/timezone") !== false){
-	authenticate();
+	authenticate($conn);
 	//gestione del metodo get per zona
 	if(isset($_GET['timezone'])){
 		header('Content-type: application/json');
@@ -80,14 +90,7 @@ else
 			$text = $message['text'];
 			
 			$token = getenv('BOTTOKEN');
-
-			//connessione con database
-			if(!$conn = pg_connect(getenv("DATABASE_URL"))){
-				error_log("Connessione al database fallita");
-			}else{
-				error_log("Connessione al database riuscita");
-			}
-
+		
 			//elaborazione della risposta
 			$message_to_send = elaborateMessage($conn, $chat_id, $text);
 			
@@ -532,7 +535,7 @@ function getJsonTimeZoneList(){
 }
 
 //funzione per la gestione dell'autenticazione
-function authenticate(){
+function authenticate($conn){
 
 	if (!isset($_SERVER['PHP_AUTH_USER'])) {
 		header('WWW-Authenticate: Basic realm="Autenticazione"');
@@ -540,8 +543,7 @@ function authenticate(){
 		echo 'Autenticazione fallita';
 		exit;
 	} else {		
-		if($_SERVER['PHP_AUTH_USER'] !== getenv('USERNAME') ||
-		   $_SERVER['PHP_AUTH_PW'] !== getenv('PASSWORD')){
+		if(!loginUser($conn)){
 			header('HTTP/1.0 401 Unauthorized');
 			echo 'Username o password errati.';
 			exit;
@@ -550,6 +552,22 @@ function authenticate(){
 
 }
 
+//funzione per controllare l'utente nel database
+function loginUser($conn){
+
+	$username=$_SERVER['PHP_AUTH_USER'];
+	$password=$_SERVER['PHP_AUTH_PW'];
+	$validation=false;
+
+	$res=pg_query($conn, "SELECT password FROM account WHERE username = '{$username}';");
+	$arr = pg_fetch_all($res);
+	if($res && pg_num_rows($res) > 0)
+		if($password === $arr[0]["password"])
+			$validation=true;
+
+	return $validation;
+
+}
 
 
 ?>
