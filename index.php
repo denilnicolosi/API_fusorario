@@ -18,58 +18,49 @@ if(!$conn = pg_connect(getenv("DATABASE_URL"))){
 	error_log("Connessione al database riuscita");
 }
 
-
-if($_SERVER['REQUEST_METHOD'] === "GET" && $request === "/"){
-	//apertura documentazione open api in GET su /
-	echo file_get_contents("OpenAPI/openAPI.html");
-}
-else if(strpos($request, "/ip") !== false){
-	authenticate($conn);	
-	//gestione del metodo get per ip
-	if(isset($_GET['ip'])){
-		header('Content-type: application/json');
-		echo getJsonTimeZoneFromIp($_GET['ip']);
+if($_SERVER['REQUEST_METHOD'] === "GET"){
+	if($request === "/"){
+		//apertura documentazione open api in GET su /
+		echo file_get_contents("OpenAPI/openAPI.html");
 	}
-	//gestione del metodo post per ip
-	else if(isset($_POST['ip'])){
-		header('Content-type: application/json');
-		echo getJsonTimeZoneFromIp($_POST['ip']);
+	else if(strpos($request, "/ip") !== false){
+		authenticate($conn);	
+		//gestione del metodo get per ip
+		if(isset($_GET['ip'])){
+			header('Content-type: application/json');
+			echo getJsonTimeZoneFromIp($_GET['ip']);
+		}		
+		else if(empty($_GET)){
+			//utilizzo l'indirizzo ip del client
+			header('Content-type: application/json');
+			echo getJsonTimeZoneFromIp($_SERVER['HTTP_X_FORWARDED_FOR']);
+		}	
+		else{
+			http_response_code(400);
+			echo "400 Bad request";
+		}
+			
 	}
-	else if(empty($_GET) && empty($_POST)){
-		header('Content-type: application/json');
-		echo getJsonTimeZoneFromIp($_SERVER['HTTP_X_FORWARDED_FOR']);
-	}	
-	else{
-		http_response_code(400);
-		echo "400 Bad request";
-	}
-		
-}
-else if(strpos($request, "/timezone") !== false){
-	authenticate($conn);
-	//gestione del metodo get per zona
-	if(isset($_GET['timezone'])){
-		header('Content-type: application/json');
-		echo getJsonTimeZoneLocation($_GET['timezone']);
-	}
-	//gestione del metodo post per zona
-	else if(isset($_POST['timezone'])){
-		header('Content-type: application/json');
-		echo getJsonTimeZoneLocation($_POST['timezone']);
-	}
-	//gestione della stampa della lista delle zone
-	else if(empty($_GET) && empty($_POST)){
-		header('Content-type: application/json');
-		echo getJsonTimeZoneList();
-	}
-	else{
-		http_response_code(400);
-		echo "400 Bad request";
+	else if(strpos($request, "/timezone") !== false){
+		authenticate($conn);
+		//gestione del metodo get per zona
+		if(isset($_GET['timezone'])){
+			header('Content-type: application/json');
+			echo getJsonTimeZoneLocation($_GET['timezone']);
+		}		
+		//gestione della stampa della lista delle zone
+		else if(empty($_GET)){
+			header('Content-type: application/json');
+			echo getJsonTimeZoneList();
+		}
+		else{
+			http_response_code(400);
+			echo "400 Bad request";
+		}
 	}
 }
-else
-{
-	//gestione del bot telegram
+else if ($_SERVER['REQUEST_METHOD'] === "POST" && strpos($request, "/telegram") !== false) //gestione del bot telegram
+{	
 	// php://input restituisce i dati raw (testo), 
 	//i dati che si riceveranno saranno in formato Json.
 	$content = file_get_contents("php://input");	
@@ -97,11 +88,22 @@ else
 			//invio del messaggio di risposta
 			sendMessage($token, $chat_id, $message_to_send);		
 		}
-		else{
+		else
+		{
 			http_response_code(400);
 			echo "400 Bad request";
 		}
 	}
+	else
+	{
+		http_response_code(400);
+		echo "400 Bad request";
+	}
+}
+else
+{
+	http_response_code(400);
+	echo "400 Bad request";
 }
 
 //funzione per elaborare la risposta
