@@ -18,7 +18,8 @@ if(!$conn = pg_connect(getenv("DATABASE_URL"))){
 	error_log("Connessione al database riuscita");
 }
 
-if($_SERVER['REQUEST_METHOD'] === "GET"){
+if($_SERVER['REQUEST_METHOD'] === "GET")  //gestione della API 
+{
 	if($request === "/"){
 		//apertura documentazione open api in GET su /
 		echo file_get_contents("OpenAPI/openAPI.html");
@@ -105,6 +106,10 @@ else
 	http_response_code(400);
 	echo "400 Bad request";
 }
+
+
+
+//####################### FUNZIONI PER LA GESTIONE DEL BOT TELEGRAM #######################
 
 //funzione per elaborare la risposta
 function elaborateMessage($conn, $chat_id, $text){
@@ -205,6 +210,7 @@ function getChatStatus($conn, $chat_id){
 		return 0;
 	}
 }
+
 //funzione per formattare l'area e la località
 function formatText($text){
 	$text=strtolower($text);
@@ -312,153 +318,198 @@ function sendMessage($token, $chatId, $messageText){
 function getTimeZoneList($chat_id){
 		global $token;
 		
-	    $url = "http://worldtimeapi.org/api/timezone";
+		$url = "http://api-fusorario.herokuapp.com/timezone";
+		
+		$user = getenv('USERNAME');
+		$pwd = getenv('PASSWORD');
+
         $handle = curl_init($url);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_HTTPGET, true);
-        $response = curl_exec($handle);
+		curl_setopt($handle, CURLOPT_HTTPGET, true);
+		curl_setopt($handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($handle, CURLOPT_USERPWD, "{$user}:{$pwd}");
+		$response = curl_exec($handle);
+		$httpcode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
         $timezone=json_decode($response, true);
-        
-        $areas=array();
-        
-        foreach($timezone as $t){
-			array_push($areas, substr($t,0,strpos($t,"/")));
-		}
-        
-        $areas= array_unique($areas);
-        
-        foreach($areas as $area){
-			if(strlen($area)>0){
-				$zone=array();
-				
-				foreach($timezone as $t){
-					$pos=strpos($t, $area);
-					if(!($pos===false) && $pos < strpos($t,"/")){ 
-						array_push($zone, $t);
-					}
-				}
-				
-				sendMessage($token, $chat_id,
-				 "<b>".$area.":</b> \n". implode("\n", $zone));
+		
+		if($httpcode == 200){
+			$areas=array();
+			
+			foreach($timezone as $t){
+				array_push($areas, substr($t,0,strpos($t,"/")));
 			}
-        }
-        
-        return "";       
+			
+			$areas= array_unique($areas);
+			
+			foreach($areas as $area){
+				if(strlen($area)>0){
+					$zone=array();
+					
+					foreach($timezone as $t){
+						$pos=strpos($t, $area);
+						if(!($pos===false) && $pos < strpos($t,"/")){ 
+							array_push($zone, $t);
+						}
+					}
+					
+					sendMessage($token, $chat_id,
+					"<b>".$area.":</b> \n". implode("\n", $zone));
+				}
+			}
+			return "";
+		}else
+		{
+			return "Errore";
+		}
+               
 }
 
 //funzione per catturare il fuso orario dall'api esterna dato l'ip
 function getTimeZoneFromIp($ip){
 	
-		$url = "http://worldtimeapi.org/api/ip/{$ip}";
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_HTTPGET, true);
-        $response = curl_exec($handle);
-        $timezone=json_decode($response, true);
-        
-        //composizione della stringa di risposta
-        date_default_timezone_set($timezone["timezone"]);
-        
-        $data=date('Y-m-d', strtotime($timezone["datetime"]));
-        $ora=date('H:i:s', strtotime($timezone["datetime"]));
-        $response= "<b>Fuso orario dell'indirizzo {$ip} </b>\n"
-        ."Numero della settimana : {$timezone["week_number"]} \n"
-        ."Giorno dell'anno : {$timezone["day_of_year"]} \n"
+	$user = getenv('USERNAME');
+	$pwd = getenv('PASSWORD');
+
+	$url = "http://api-fusorario.herokuapp.com/ip?ip={$ip}";
+	$handle = curl_init($url);
+	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($handle, CURLOPT_HTTPGET, true);
+	curl_setopt($handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	curl_setopt($handle, CURLOPT_USERPWD, "{$user}:{$pwd}");
+	$response = curl_exec($handle);
+	$httpcode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+	$timezone=json_decode($response, true);
+
+	if($httpcode == 200){
+
+		$response= "<b>Fuso orario dell'indirizzo {$ip} </b>\n"
+		."Numero della settimana : {$timezone["week_number"]} \n"
+		."Giorno dell'anno : {$timezone["day_of_year"]} \n"
 		."Giorno della settimana: {$timezone["day_of_week"]} \n"
-        ."UTC : {$timezone["utc_offset"]} \n"
-        ."Data : {$data} \n"
-        ."Ora : {$ora} \n"
-        ."Zona di fuso orario : {$timezone["timezone"]}\n";
-        
-        return $response;
-        
+		."UTC : {$timezone["utc_offset"]} \n"
+		."Data : {$timezone["date"]} \n"
+		."Ora : {$timezone["time"]} \n"
+		."Zona di fuso orario : {$timezone["timezone"]}\n";
+	}
+	else
+	{
+		$response="Errore";
+	}
+	return $response;        
 }
 
 //funzione per catturare le aree dell'api esterna
 function getArea(){
+
+	$user = getenv('USERNAME');
+	$pwd = getenv('PASSWORD');
 	
-	    $url = "http://worldtimeapi.org/api/timezone";
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_HTTPGET, true);
-        $response = curl_exec($handle);
-        $timezone=json_decode($response, true);        
-        
-        $areas=array();        
-        foreach($timezone as $t){
+	$url = "http://api-fusorario.herokuapp.com/timezone";
+	$handle = curl_init($url);
+	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($handle, CURLOPT_HTTPGET, true);
+	curl_setopt($handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	curl_setopt($handle, CURLOPT_USERPWD, "{$user}:{$pwd}");
+	$response = curl_exec($handle);
+	$httpcode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+
+	$timezone=json_decode($response, true);        
+	
+	if($httpcode == 200){
+
+		$areas=array();        
+		foreach($timezone as $t){
 			array_push($areas, substr($t,0,strpos($t,"/")));
 		}        
-        $areas = array_unique($areas);
-        $reply="";
-        foreach($areas as $a){
+		$areas = array_unique($areas);
+		$reply="";
+		foreach($areas as $a){
 			if(strlen($a)>0){
 				$reply=$reply."\n • ".$a;
 			}
-        }
-                
-        return $reply;        
+		}
+	}
+	else
+	{
+		$reply="Errore";
+	}
+	return $reply;        
 }
 
 //funzione per catturare le località dall'api esterna data l'area
 function getLocation($area){
+
+	$user = getenv('USERNAME');
+	$pwd = getenv('PASSWORD');
 	
-	    $url = "http://worldtimeapi.org/api/timezone";
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_HTTPGET, true);
-        $response = curl_exec($handle);
-        $timezone=json_decode($response, true);        
-        
-        $location=array();        
-        foreach($timezone as $t){
+	$url = "http://api-fusorario.herokuapp.com/timezone";
+	$handle = curl_init($url);
+	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($handle, CURLOPT_HTTPGET, true);
+	curl_setopt($handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	curl_setopt($handle, CURLOPT_USERPWD, "{$user}:{$pwd}");
+	$response = curl_exec($handle);
+	$httpcode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+
+	$timezone=json_decode($response, true);        
+	
+	if($httpcode == 200){
+		$location=array();        
+		foreach($timezone as $t){
 			if (strpos($t, $area."/") !== false) {
 				array_push( $location,
-				 (substr($t,(strpos($t,$area."/")+strlen($area)+1),
-				 strlen($t))));
+					(substr($t,(strpos($t,$area."/")+strlen($area)+1),
+					strlen($t))));
 			}
 		}        
-        $reply="";
-        foreach($location as $l){
+		$reply="";
+		foreach($location as $l){
 			if(strlen($l)>0){
 				$reply=$reply."\n • ".$l;
 			}
-        }
-            
-        return $reply;        
+		}
+	}else{
+		$reply="Errore";
+	}
+		
+	return $reply;        
 }
 
 //funzione per catturare il fuso orario data l'area e la località
 function getTimeZoneLocation($location){
 	
-	$url = "http://worldtimeapi.org/api/timezone/{$location}";
+	$user = getenv('USERNAME');
+	$pwd = getenv('PASSWORD');
+
+	$url = "http://api-fusorario.herokuapp.com/timezone?timezone={$location}";
 	$handle = curl_init($url);
 	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($handle, CURLOPT_HTTPGET, true);
+	curl_setopt($handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	curl_setopt($handle, CURLOPT_USERPWD, "{$user}:{$pwd}");
 	$response = curl_exec($handle);
+	$httpcode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 	$timezone=json_decode($response, true);
-	
-	if(!isset($timezone['error'])){
-	
-		//composizione della stringa di risposta
-		date_default_timezone_set($timezone["timezone"]);
-		
-		$data=date('Y-m-d', strtotime($timezone["datetime"]));
-		$ora=date('H:i:s', strtotime($timezone["datetime"]));
+
+	//composizione della stringa di risposta
+	if($httpcode == 200)
 		$response= "<b>Fuso orario della zona {$location} </b>\n"
 		."Numero della settimana : {$timezone["week_number"]} \n"
 		."Giorno dell'anno : {$timezone["day_of_year"]} \n"
 		."Giorno della settimana: {$timezone["day_of_week"]} \n"
 		."UTC : {$timezone["utc_offset"]} \n"
-		."Data : {$data} \n"
-		."Ora : {$ora} \n"
+		."Data : {$timezone["date"]} \n"
+		."Ora : {$timezone["time"]} \n"
 		."Zona di fuso orario : {$timezone["timezone"]}\n";
-		
-	}else{
-		$response="error";
-	}
-	
+	else
+		$response="Errore";
+
 	return $response;
 }
+
+
+
+//####################### FUNZIONI PER LA GESTIONE DELLA API #######################
 
 //funzione per catturare il fuso orario dall'api esterna dato l'ip
 function getJsonTimeZoneFromIp($ip){
@@ -467,10 +518,11 @@ function getJsonTimeZoneFromIp($ip){
         $handle = curl_init($url);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($handle, CURLOPT_HTTPGET, true);
-        $response = curl_exec($handle);
+		$response = curl_exec($handle);
+		$httpcode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
         $timezone=json_decode($response, true);
               
-        if(!isset($timezone['error'])){
+        if($httpcode == 200 && !isset($timezone['error'])){
 			//composizione della stringa di risposta
 			date_default_timezone_set($timezone["timezone"]);
 			
@@ -488,9 +540,9 @@ function getJsonTimeZoneFromIp($ip){
 			$r['timezone']=$timezone["timezone"];
 		}else{
 			$r="error";
+			http_response_code(400);
 		}
-        return json_encode($r);
-        
+        return json_encode($r);        
 }
 
 //funzione per catturare il fuso orario data l'area e la località
@@ -501,9 +553,10 @@ function getJsonTimeZoneLocation($location){
 	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($handle, CURLOPT_HTTPGET, true);
 	$response = curl_exec($handle);
+	$httpcode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 	$timezone=json_decode($response, true);
 	
-	if(!isset($timezone["error"])){
+	if($httpcode == 200 && !isset($timezone["error"])){
 		//composizione della stringa di risposta
 		date_default_timezone_set($timezone["timezone"]);
 		
@@ -520,6 +573,7 @@ function getJsonTimeZoneLocation($location){
 		$r['timezone']=$timezone["timezone"];
 	}else{
 		$r="error";
+		http_response_code(400);
 	}
 	return json_encode($r);
 }
@@ -532,8 +586,14 @@ function getJsonTimeZoneList(){
 	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($handle, CURLOPT_HTTPGET, true);
 	$response = curl_exec($handle);
+	$httpcode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 
-	return $response;
+	if($httpcode == 200)
+		return $response;
+	else{ 
+		http_response_code(503);
+		return "error";
+	}
 }
 
 //funzione per la gestione dell'autenticazione
@@ -570,7 +630,6 @@ function loginUser($conn){
 	return $validation;
 
 }
-
 
 ?>
 

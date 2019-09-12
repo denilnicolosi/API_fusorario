@@ -26,7 +26,7 @@ namespace WpfFusorario
             {
                 var client = new RestClient("https://api-fusorario.herokuapp.com");
                 client.Authenticator = new HttpBasicAuthenticator("username", "pippo");
-                var request = new RestRequest("/timezone", Method.POST);
+                var request = new RestRequest("/timezone", Method.GET);
                 request.AddParameter("timezone", zone.Text);
                 IRestResponse response = client.Execute(request);
 
