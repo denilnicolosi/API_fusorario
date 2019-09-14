@@ -6,7 +6,7 @@ o in alternativa presso [Swagger](https://app.swaggerhub.com/apis/Denil/api-fuso
 ----------------------------------------------------------
 
 ## Telegram
-Per la gestione del bot telegram, l'api attende richieste POST sul path principale `/`.
+Per la gestione del bot telegram, l'api attende richieste POST sul path `/telegram`.
 Per inviare i messaggi di risposta, il servizio effettua una richiesta POST a
 ```
 https://api.telegram.org/bot{token}/sendMessage
@@ -24,7 +24,7 @@ Le richieste elaborate dall'API si articolano in due path:
  * `api-fusorario.herokuapp.com/timezone`
  * `api-fusorario.herokuapp.com/ip`
  
-e possono essere effettuate sia in GET che in POST.
+e devono essere effettuate con il metodo GET.
 
 A tutte le richieste, l'API risponderà con gli HTTP response status codes: 
 
@@ -40,12 +40,12 @@ Data una zona formata da {area}/{localita} viene dato il fuso orario. Se non vie
 La zona desiderata deve essere specificata tramite parametro stringa.
 
 #### Esempi
-Effettuando una richiesta GET o POST all'indirizzo
+Effettuando una richiesta GET all'indirizzo
 ``` 
 api-fusorario.herokuapp.com/timezone
 ```
 Si avra come output un JSON contenente tutte le località,
-mentre effettuando una richiesta GET o POST al medisimo indirizzo ma con località specificata, come
+mentre effettuando una richiesta GET al medisimo indirizzo ma con località specificata, come
 ```
 api-fusorario.herokuapp.com/timezone?timezone=Europe/Rome
 ```
@@ -67,7 +67,7 @@ Dato un indirizzo ip, viene geocalizzato e ne viene dato il fuso orario. In caso
 L'indirizzo ip deve essere specificato tramite parametro stringa.
 
 #### Esempi
-Effettuando una richiesta GET o POST all'indirizzo
+Effettuando una richiesta GET all'indirizzo
 ``` 
 api-fusorario.herokuapp.com/ip
 ```
@@ -84,7 +84,7 @@ Si avra come output un JSON le informazioni sul fuso orario del ip del client, c
     "timezone":"Europe\/Rome"
 }
 ```
-mentre effettuando una richiesta GET o POST al medisimo indirizzo ma con ip specificato, come
+mentre effettuando una richiesta GET al medisimo indirizzo ma con ip specificato, come
 ```
 api-fusorario.herokuapp.com/ip?ip=12.123.43.12
 ```

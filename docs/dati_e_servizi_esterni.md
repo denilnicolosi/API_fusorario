@@ -13,7 +13,7 @@ http://worldtimeapi.org/api/timezone
 Che restituisce un JSON contenente tutte le zone.
 
 ## Fuso orario da zona
-Per richiedere il fuso orario di una zona, viene effettuata la richiesta HTTP con il metodo GET:
+Per richiedere il fuso orario di una zona, viene effettuata la richiesta HTTP con il metodo GET :
 
 ```
 http://worldtimeapi.org/api/timezone/{location}
@@ -22,7 +22,7 @@ http://worldtimeapi.org/api/timezone/{location}
 Che restituisce un JSON contentente le informazioni fuso orario con il seguente [schema](http://worldtimeapi.org/pages/schema).
 
 ## Fuso orario da indirizzo ip
-Per richiedere il fuso orario da un indirizzo ip, viene effettuata la richiesta HTTP con il metodo GET:
+Per richiedere il fuso orario da un indirizzo ip, viene effettuata la richiesta HTTP con il metodo GET :
 
 ```
 http://worldtimeapi.org/api/ip/{ip}

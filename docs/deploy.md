@@ -10,6 +10,8 @@ In particolare, le variabili impostate sono:
 
  * BOTTOKEN (token del bot di telegram)
  * DATABASE_URL (stringa di connessione al database)
+ * USERNAME (utente utilizzato per effettuare la richiesta all'API)
+ * PASSWORD (password utilizzata per effettuare la richiesta all'API)
 
 
 ## Collegamento del webhook telegram

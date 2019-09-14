@@ -36,7 +36,7 @@ namespace WpfFusorario
                     var resp = JsonNet.Deserialize<Dictionary<string, object>>(content);
 
                     //composizione output
-                    timezone.Text = "Numero della settimana : " + resp["week_number"].ToString();
+                    timezone.Text = " Numero della settimana : " + resp["week_number"].ToString();
                     timezone.Text += "\r Giorno dell'anno : " + resp["day_of_year"].ToString();
                     timezone.Text += "\r Giorno della settimana : " + resp["day_of_week"].ToString();
                     timezone.Text += "\r UTC : " + resp["utc_offset"].ToString();

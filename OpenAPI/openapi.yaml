@@ -46,36 +46,6 @@ paths:
           description: Autenticazione fallita
         503:
           description: Servizio non disponibile
-    post:
-      tags:
-      - Indirizzo ip
-      summary: Geolocalizzazione per inidirizzo ip
-      description: Dato un indirizzo ip, viene geocalizzato e ne viene dato il fuso
-        orario. In caso non sia specificato un indirizzo ip, viene utilizzato l'indirizzo
-        del client che effettua la richiesta.
-      parameters:
-      - name: ip
-        in: query
-        description: indirizzo ip di cui si vuole conoscere il fuso orario.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: string
-      responses:
-        200:
-          description: Risposta OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IpTimezone'
-        400:
-          description: Richiesta errata
-        401:
-          description: Autenticazione fallita
-        503:
-          description: Servizio non disponibile
   /timezone:
     get:
       tags:
@@ -99,40 +69,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                - $ref: '#/components/schemas/ZoneTimezone'
-                - $ref: '#/components/schemas/ListTimezone'
-        400:
-          description: Richiesta errata
-        401:
-          description: Autenticazione fallita
-        503:
-          description: Servizio non disponibile
-    post:
-      tags:
-      - Zona
-      summary: Fuso orario da zona
-      description: Data una zona formata da {area}/{localita} viene dato il fuso orario.
-        Se non viene specificata una zona, viene stampata la lista delle zone.
-      parameters:
-      - name: timezone
-        in: query
-        description: zona di cui si vuole conoscere il fuso orario.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: string
-      responses:
-        200:
-          description: Risposta OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/ZoneTimezone'
-                - $ref: '#/components/schemas/ListTimezone'
+                $ref: '#/components/schemas/ZoneTimezone'
         400:
           description: Richiesta errata
         401:
